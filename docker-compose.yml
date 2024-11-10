@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"  
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://taxregistry-mysql:3306/taxregistry 
+      SPRING_DATASOURCE_USERNAME: root  
+      SPRING_DATASOURCE_PASSWORD: Root123!  
+    depends_on:
+      - taxregistry-mysql
+
+  taxregistry-mysql:
+    image: mysql:8.0  
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Root123!
+      MYSQL_DATABASE: taxregistry  
+      MYSQL_USER: root  
+      MYSQL_PASSWORD: Root123!  
+    ports:
+      - "3307:3306" 
+    volumes:
+      - mysql-data:/var/lib/mysql 
+
+volumes:
+  mysql-data:  
