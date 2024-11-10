@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/ping")
+@RequestMapping("/ping")
 public class PingController {
 
 	@GetMapping
