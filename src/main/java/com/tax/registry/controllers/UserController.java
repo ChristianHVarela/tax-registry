@@ -17,8 +17,10 @@ import com.tax.registry.model.User;
 import com.tax.registry.security.TokenConfiguration;
 import com.tax.registry.service.UserService;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 
+@Hidden
 @RestController
 @RequestMapping("/api/user")
 public class UserController {

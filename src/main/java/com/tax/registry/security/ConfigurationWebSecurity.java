@@ -20,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class ConfigurationWebSecurity {
 	
 	private final CustomAuthenticationFilter customBasicAuthenticationFilter;
-
+	
 	public ConfigurationWebSecurity(CustomAuthenticationFilter customBasicAuthenticationFilter) {
 		super();
 		this.customBasicAuthenticationFilter = customBasicAuthenticationFilter;
@@ -28,15 +28,17 @@ public class ConfigurationWebSecurity {
 
 	@Bean
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		return http.csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests((request) -> request
-                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user/login").permitAll()
-                        .anyRequest().authenticated())
-                .addFilterBefore(customBasicAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+	    return http.csrf(csrf -> csrf.disable())
+	            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	            .authorizeHttpRequests((request) -> request
+	                .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
+	                .requestMatchers(HttpMethod.POST, "/api/user/login").permitAll()
+	                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+	                .anyRequest().authenticated())
+	            .addFilterBefore(customBasicAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+	            .build();
 	}
+
 	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
