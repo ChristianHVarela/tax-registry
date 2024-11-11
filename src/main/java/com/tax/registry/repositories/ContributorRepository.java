@@ -21,4 +21,7 @@ public interface ContributorRepository extends JpaRepository<Contributor, Long> 
 
 	@Query(value = "SELECT c FROM Contributor c WHERE c.disable IS FALSE")
 	Page<Contributor> findAllEnable(PageRequest pageRequest);
+
+	@Query(value = "SELECT c FROM Contributor c WHERE c.disable IS FALSE AND c.id = ?1")
+	Optional<Contributor> findByIdEnable(Long id);
 }

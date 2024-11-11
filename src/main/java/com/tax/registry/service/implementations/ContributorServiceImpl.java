@@ -1,5 +1,6 @@
 package com.tax.registry.service.implementations;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,6 +80,33 @@ public class ContributorServiceImpl implements ContributorService {
 		Contributor contributor = new Contributor(contributorDTO);
 		contributor = repository.save(contributor);
 		
+		return ContributorDTO.fromEntity(contributor);
+	}
+
+	@Override
+	public void disableContributor(Long id) {
+		Optional<Contributor> contributorOpt = repository.findById(id);
+		if (contributorOpt.isEmpty()) {
+			throw new TaxRegistryException(HttpStatus.NOT_FOUND, "No contributor found.");
+		}
+		
+		Contributor contributor = contributorOpt.get();
+		if (contributor.getDisable()) {
+			throw new TaxRegistryException(HttpStatus.NOT_FOUND, "Contributor has already been deleted previously.");
+		}
+		
+		contributor.setDisable(true);
+		contributor.setDisableAt(LocalDateTime.now());
+		repository.save(contributor);
+	}
+
+	@Override
+	public ContributorDTO findById(Long id) {
+		Optional<Contributor> contributorOpt = repository.findByIdEnable(id);
+		if (contributorOpt.isEmpty()) {
+			throw new TaxRegistryException(HttpStatus.NOT_FOUND, "No contributor found.");
+		}
+		Contributor contributor = contributorOpt.get();
 		return ContributorDTO.fromEntity(contributor);
 	}
 
