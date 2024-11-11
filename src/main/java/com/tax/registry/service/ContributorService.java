@@ -13,5 +13,7 @@ public interface ContributorService {
 	void disableContributor(Long id);
 
 	ContributorDTO findById(Long id);
+
+	ContributorDTO updateContributor(Long id, ContributorDTO contributorDTO);
 	
 }

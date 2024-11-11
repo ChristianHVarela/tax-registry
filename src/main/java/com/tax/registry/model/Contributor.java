@@ -3,8 +3,6 @@ package com.tax.registry.model;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.tax.registry.dto.ContributorDTO;
 import com.tax.registry.model.embeddables.CompanyData;
 import com.tax.registry.model.embeddables.PersonalData;
@@ -102,4 +100,19 @@ public class Contributor implements Serializable {
         );
     }
 
+	public boolean isDocumentMatching(ContributorDTO contributorDTO) {
+	    if (!this.personType.equals(contributorDTO.getPersonType())) {
+	        return false;
+	    }
+
+	    String document = this.personType.equals(PersonType.PERSONAL)
+	            ? this.personalData.getCpf()
+	            : this.companyData.getCnpj();
+
+	    String dtoDocument = this.personType.equals(PersonType.PERSONAL)
+	            ? contributorDTO.getCpf()
+	            : contributorDTO.getCnpj();
+
+	    return document.equals(ValidationUtils.removeSpecialCharacters(dtoDocument));
+	}
 }

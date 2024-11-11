@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,5 +54,11 @@ public class ContributorController {
 	public ResponseEntity<Object> disableContributor(@PathVariable(required = true) Long id) {
 		service.disableContributor(id);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+	
+	@PutMapping("/{id}")
+	public ResponseEntity<Object> updateContributor(@PathVariable(required = true) Long id, @RequestBody ContributorDTO contributorDTO) {
+		ContributorDTO contributorUpdated = service.updateContributor(id, contributorDTO);
+		return ResponseEntity.status(HttpStatus.OK).body(contributorUpdated);
 	}
 }

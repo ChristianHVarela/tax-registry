@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 
 import com.tax.registry.dto.ContributorDTO;
 import com.tax.registry.exceptions.TaxRegistryException;
+import com.tax.registry.model.Address;
 import com.tax.registry.model.Contributor;
+import com.tax.registry.model.embeddables.CompanyData;
+import com.tax.registry.model.embeddables.PersonalData;
 import com.tax.registry.modelEnum.PersonType;
 import com.tax.registry.repositories.ContributorRepository;
 import com.tax.registry.service.ContributorService;
@@ -63,24 +66,36 @@ public class ContributorServiceImpl implements ContributorService {
 
 	@Override
 	public ContributorDTO createContributor(ContributorDTO contributorDTO) {
-		validator.validate(contributorDTO);
-		
-		if (contributorDTO.getPersonType().equals(PersonType.PERSONAL)) {
-			Optional<Contributor> contributorOpt = repository.findByCpf(ValidationUtils.removeSpecialCharacters(contributorDTO.getCpf()));
-			if (contributorOpt.isPresent()) {
-				throw new TaxRegistryException(HttpStatus.BAD_REQUEST, "The CPF is already in use.");
-			}
-		} else {
-			Optional<Contributor> contributorOpt = repository.findByCnpj(ValidationUtils.removeSpecialCharacters(contributorDTO.getCnpj()));
-			if (contributorOpt.isPresent()) {
-				throw new TaxRegistryException(HttpStatus.BAD_REQUEST, "The CNPJ is already in use.");
-			}
-		}
+		validateContributorDTO(contributorDTO, null);
 		
 		Contributor contributor = new Contributor(contributorDTO);
 		contributor = repository.save(contributor);
 		
 		return ContributorDTO.fromEntity(contributor);
+	}
+
+	private void validateContributorDTO(ContributorDTO contributorDTO, Contributor contributor) {
+	    validator.validate(contributorDTO);
+
+	    if (contributor == null || contributor.isDocumentMatching(contributorDTO)) {
+	        return;
+	    }
+
+	    String document = contributorDTO.getPersonType() == PersonType.PERSONAL 
+	            ? ValidationUtils.removeSpecialCharacters(contributorDTO.getCpf()) 
+	            : ValidationUtils.removeSpecialCharacters(contributorDTO.getCnpj());
+
+	    checkIfDocumentExists(contributorDTO.getPersonType(), document);
+	}
+
+	private void checkIfDocumentExists(PersonType personType, String document) {
+	    Optional<Contributor> contributorOpt = personType == PersonType.PERSONAL
+	            ? repository.findByCpf(document) : repository.findByCnpj(document);
+
+	    contributorOpt.ifPresent(contributor -> {
+	        String message = personType == PersonType.PERSONAL ? "The CPF is already in use." : "The CNPJ is already in use.";
+	        throw new TaxRegistryException(HttpStatus.BAD_REQUEST, message);
+	    });
 	}
 
 	@Override
@@ -108,6 +123,66 @@ public class ContributorServiceImpl implements ContributorService {
 		}
 		Contributor contributor = contributorOpt.get();
 		return ContributorDTO.fromEntity(contributor);
+	}
+
+	@Override
+	public ContributorDTO updateContributor(Long id, ContributorDTO contributorDTO) {
+		Optional<Contributor> contributorOpt = repository.findByIdEnable(id);
+		if (contributorOpt.isEmpty()) {
+			throw new TaxRegistryException(HttpStatus.NOT_FOUND, "No contributor found.");
+		}
+		
+		Contributor contributor = contributorOpt.get();
+		contributor.setId(id);
+
+		validateContributorDTO(contributorDTO, contributor);
+		
+		PersonType personType = contributorDTO.getPersonType();
+	    if (personType.equals(PersonType.PERSONAL)) {
+	        contributor.setPersonalData(createPersonalData(contributorDTO));
+	        contributor.setCompanyData(null);
+	    } else {
+	        contributor.setCompanyData(createCompanyData(contributorDTO));
+	        contributor.setPersonalData(null);
+	    }
+
+	    contributor.setAddress(createAddress(contributorDTO));
+	    contributor.setPersonType(contributorDTO.getPersonType());
+	    contributor.setIdentification(contributorDTO.getIdentification());
+	    contributor.setPhone(contributorDTO.getPhone());
+
+	    Contributor updatedContributor = repository.save(contributor);
+	    return ContributorDTO.fromEntity(updatedContributor);
+	}
+
+	private PersonalData createPersonalData(ContributorDTO dto) {
+	    return new PersonalData(
+	        ValidationUtils.removeSpecialCharacters(dto.getCpf()),
+	        dto.getBirthDate(),
+	        dto.getGender(),
+	        ValidationUtils.removeSpecialCharacters(dto.getRg()),
+	        dto.getFatherName(),
+	        dto.getMotherName()
+	    );
+	}
+
+	private CompanyData createCompanyData(ContributorDTO dto) {
+	    return new CompanyData(
+	        dto.getTradeName(),
+	        ValidationUtils.removeSpecialCharacters(dto.getCnpj())
+	    );
+	}
+
+	private Address createAddress(ContributorDTO dto) {
+	    return new Address(
+	        dto.getStreet(),
+	        dto.getNumber(),
+	        dto.getCity(),
+	        dto.getState(),
+	        dto.getCountry(),
+	        dto.getAddition(),
+	        dto.getZipCode()
+	    );
 	}
 
 }
