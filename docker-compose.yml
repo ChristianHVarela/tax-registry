@@ -11,6 +11,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://taxregistry-mysql:3306/taxregistry 
       SPRING_DATASOURCE_USERNAME: root  
       SPRING_DATASOURCE_PASSWORD: Root123!  
+      TOKEN_SECRET: y7H8@wP9u#T$R0pL1kV6b!Qz4E5nM2xN9sF3cZ7gU@t
     depends_on:
       - taxregistry-mysql
 

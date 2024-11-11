@@ -15,17 +15,20 @@ public class TaxRegistryControllerAdvice {
 
 	@ExceptionHandler(TaxRegistryException.class)
     public ResponseEntity<String> handleCardGameException(TaxRegistryException ex) {
+		ex.printStackTrace();
         return ResponseEntity.status(ex.getStatusCode()).body(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGenericException(Exception ex) {
+    	ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                              .body("An unexpected error occurred.");
     }
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    	ex.printStackTrace();
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
